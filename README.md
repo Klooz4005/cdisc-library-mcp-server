@@ -59,6 +59,9 @@ npm start
 - **CDISC_RETRY_COUNT** (optional): number of retries for transient 5xx/network errors. Default: `2`.
 - **CDISC_RETRY_BACKOFF_MS** (optional): base backoff per attempt in ms. Default: `300`.
 - **CDISC_CACHE_DEBUG** (optional): set to `1` to log cache/retry activity to stderr.
+ - **CDISC_CACHE_PERSIST_PATH** (optional): file path to persist cache to disk (JSON). Default: disabled.
+ - **CDISC_CACHE_EXCLUDE_REGEX** (optional): regex to exclude cache matches; defaults also exclude search/suggest.
+ - **CDISC_CACHE_INCLUDE_REGEX** (optional): regex to force-include cache matches.
 
 ### Package as a DXT extension
 - Spec: [DXT MANIFEST.md](https://github.com/anthropics/dxt/blob/main/MANIFEST.md)
@@ -81,6 +84,9 @@ npm run pack:dxt
 - **Generic**:
   - `list_operations(filter?)`
   - `call_operation(operationId, pathParams?, query?, body?, headers?, timeoutMs?)`
+- **Cache management**:
+  - `cache.clear()` — clear all in-memory cache entries
+  - `cache.invalidate(contains?, regex?)` — invalidate entries by substring or regex match
 - **Discovery**:
   - `search.suggest(q, top?, select?)`
   - `search.query(q, start?, pageSize?, facets?, filters?)`

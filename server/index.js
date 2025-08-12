@@ -20,6 +20,9 @@ const CACHE_MAX_ENTRIES = Math.max(1, Number(process.env.CDISC_CACHE_MAX_ENTRIES
 const RETRY_COUNT = Math.max(0, Number(process.env.CDISC_RETRY_COUNT || 2));
 const RETRY_BACKOFF_MS = Math.max(0, Number(process.env.CDISC_RETRY_BACKOFF_MS || 300));
 const CACHE_DEBUG = process.env.CDISC_CACHE_DEBUG === "1";
+const CACHE_PERSIST_PATH = process.env.CDISC_CACHE_PERSIST_PATH || ""; // if set, persist cache to disk
+const CACHE_EXCLUDE_REGEX = process.env.CDISC_CACHE_EXCLUDE_REGEX || ""; // JS regex string
+const CACHE_INCLUDE_REGEX = process.env.CDISC_CACHE_INCLUDE_REGEX || ""; // JS regex string
 
 function loadYamlIfExists(filename) {
   const filePath = path.join(OPENAPI_DIR, filename);
@@ -129,12 +132,86 @@ class SimpleLruCache {
       this.map.delete(oldestKey);
     }
   }
+  clear() {
+    this.map.clear();
+  }
+  deleteIf(predicate) {
+    for (const key of Array.from(this.map.keys())) {
+      if (predicate(key)) this.map.delete(key);
+    }
+  }
 }
 
 const responseCache = CACHE_ENABLED ? new SimpleLruCache(CACHE_MAX_ENTRIES) : null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Cache persistence (optional)
+let persistTimer = null;
+function schedulePersist() {
+  if (!CACHE_PERSIST_PATH || !CACHE_ENABLED || !responseCache) return;
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    try {
+      const entries = [];
+      for (const [key, value] of responseCache.map.entries()) {
+        entries.push([key, value]);
+      }
+      fs.writeFileSync(CACHE_PERSIST_PATH, JSON.stringify({ v: 1, entries }), "utf8");
+      if (CACHE_DEBUG) console.error(`[cache] persisted ${entries.length} entries to ${CACHE_PERSIST_PATH}`);
+    } catch (e) {
+      if (CACHE_DEBUG) console.error(`[cache] persist error: ${e?.message || e}`);
+    }
+  }, 500);
+}
+
+function loadPersistedCache() {
+  if (!CACHE_PERSIST_PATH || !CACHE_ENABLED || !responseCache) return;
+  try {
+    if (!fs.existsSync(CACHE_PERSIST_PATH)) return;
+    const raw = fs.readFileSync(CACHE_PERSIST_PATH, "utf8");
+    const data = JSON.parse(raw);
+    if (!data || data.v !== 1 || !Array.isArray(data.entries)) return;
+    const now = Date.now();
+    for (const [key, value] of data.entries) {
+      if (!value || typeof value !== "object") continue;
+      if (typeof value.expiresAt === "number" && value.expiresAt > now) {
+        responseCache.set(key, value);
+      }
+    }
+    if (CACHE_DEBUG) console.error(`[cache] loaded ${responseCache.map.size} entries from ${CACHE_PERSIST_PATH}`);
+  } catch (e) {
+    if (CACHE_DEBUG) console.error(`[cache] load error: ${e?.message || e}`);
+  }
+}
+
+if (CACHE_ENABLED && responseCache) {
+  loadPersistedCache();
+}
+
+function shouldCache(meta, url) {
+  if (!CACHE_ENABLED) return false;
+  if (meta.method !== "GET") return false;
+  // Default exclusions: search and suggest are volatile
+  const defaultExclude = /\/mdr\/(search|suggest)/i;
+  if (defaultExclude.test(meta.path || "") || /^api-search-/i.test(meta.op?.operationId || meta.operationId || "")) {
+    return false;
+  }
+  try {
+    const u = new URL(url);
+    const normalized = `${meta.method} ${u.origin}${u.pathname}${u.search}`;
+    if (CACHE_EXCLUDE_REGEX) {
+      const re = new RegExp(CACHE_EXCLUDE_REGEX, "i");
+      if (re.test(normalized)) return false;
+    }
+    if (CACHE_INCLUDE_REGEX) {
+      const reIn = new RegExp(CACHE_INCLUDE_REGEX, "i");
+      if (reIn.test(normalized)) return true;
+    }
+  } catch {}
+  return true;
 }
 
 // Load OpenAPI specs
@@ -166,6 +243,23 @@ const tools = [
       type: "object",
       properties: {
         filter: { type: "string", description: "Substring to filter operationId or path" }
+      }
+    }
+  },
+  // Cache management tools
+  {
+    name: "cache.clear",
+    description: "Clear all in-memory cache entries.",
+    inputSchema: { type: "object" }
+  },
+  {
+    name: "cache.invalidate",
+    description: "Invalidate cache entries whose URL matches a substring or regex.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        contains: { type: "string", description: "Substring to match against cached keys" },
+        regex: { type: "string", description: "JavaScript regex string to match against cached keys" }
       }
     }
   },
@@ -316,7 +410,7 @@ async function handleCallOperation(input) {
   const cacheKey = normalizeUrlForCache(url, authConfig);
   const now = Date.now();
 
-  if (CACHE_ENABLED && meta.method === "GET") {
+  if (shouldCache(meta, url)) {
     const cached = responseCache.get(cacheKey);
     if (cached && cached.expiresAt > now) {
       if (CACHE_DEBUG) console.error(`[cache] hit ${cacheKey}`);
@@ -325,7 +419,7 @@ async function handleCallOperation(input) {
   }
 
   // Conditional request support
-  const etag = CACHE_ENABLED && meta.method === "GET" ? responseCache.get(cacheKey)?.etag : undefined;
+  const etag = shouldCache(meta, url) ? responseCache.get(cacheKey)?.etag : undefined;
   const conditionalHeaders = etag ? { "if-none-match": etag } : {};
 
   const attemptFetch = async () => {
@@ -373,7 +467,7 @@ async function handleCallOperation(input) {
   }
 
   // 304 Not Modified → serve cached body
-  if (CACHE_ENABLED && meta.method === "GET" && res.status === 304) {
+  if (shouldCache(meta, url) && res.status === 304) {
     const cached = responseCache.get(cacheKey);
     if (cached) {
       if (CACHE_DEBUG) console.error(`[cache] revalidated ${cacheKey}`);
@@ -389,7 +483,7 @@ async function handleCallOperation(input) {
   try { parsed = JSON.parse(text); } catch { /* keep text */ }
   const content = [{ type: parsed ? "json" : "text", text: parsed ? JSON.stringify(parsed) : text }];
 
-  if (CACHE_ENABLED && meta.method === "GET" && res.ok) {
+  if (shouldCache(meta, url) && res.ok) {
     const newEtag = res.headers.get("etag") || undefined;
     responseCache.set(cacheKey, {
       content: content[0],
@@ -397,6 +491,7 @@ async function handleCallOperation(input) {
       expiresAt: now + CACHE_TTL_MS
     });
     if (CACHE_DEBUG) console.error(`[cache] store ${cacheKey} etag=${newEtag || "-"}`);
+    schedulePersist();
   }
 
   return { content, isError: !res.ok };
@@ -406,6 +501,29 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   console.error(`[mcp] tools/call: ${req.params?.name}`);
   const name = req.params.name;
   const args = (req.params && req.params.arguments) || {};
+  // Cache management handlers
+  if (name === "cache.clear") {
+    if (responseCache) responseCache.clear();
+    if (CACHE_DEBUG) console.error("[cache] cleared");
+    return { content: [{ type: "text", text: "ok" }] };
+  }
+  if (name === "cache.invalidate") {
+    const contains = typeof args.contains === "string" && args.contains ? args.contains : null;
+    const regexStr = typeof args.regex === "string" && args.regex ? args.regex : null;
+    let re = null;
+    if (regexStr) {
+      try { re = new RegExp(regexStr, "i"); } catch {}
+    }
+    if (responseCache) {
+      responseCache.deleteIf((key) => {
+        if (contains && key.includes(contains)) return true;
+        if (re && re.test(key)) return true;
+        return false;
+      });
+    }
+    if (CACHE_DEBUG) console.error(`[cache] invalidated contains=${contains || "-"} regex=${regexStr || "-"}`);
+    return { content: [{ type: "text", text: "ok" }] };
+  }
   if (name === "list_operations") return handleListOperations(args);
   if (name === "call_operation") return handleCallOperation(args);
   // Search
