@@ -1,0 +1,36 @@
+{
+  "name": "cdisc-library-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DXT-packaged MCP server for the CDISC API (cosmos v2, biomedical concepts, and dataset specializations)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_ORG/cdisc-library-mcp-server.git"
+  },
+  "keywords": [
+    "mcp",
+    "dxt",
+    "cdisc",
+    "openapi",
+    "biomedical-concepts",
+    "sdtm"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "test:mcp": "node scripts/test_mcp.js",
+    "test:plan": "node scripts/test_plan.js",
+    "pack:dxt": "npx -y @anthropic-ai/dxt pack"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "node-fetch": "^3.3.2",
+    "yaml": "^2.5.0"
+  }
+}
+
+

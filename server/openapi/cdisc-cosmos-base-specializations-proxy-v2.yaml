@@ -1,0 +1,883 @@
+openapi: 3.0.1
+info:
+  title: v2 Dataset Specialization Endpoints
+  version: '1.0'
+servers:
+  - url: https://api.library.cdisc.org/api/cosmos/v2/mdr/specializations
+paths:
+  /datasetspecializations:
+    get:
+      tags:
+        - Dataset Specialization Endpoints
+      summary: Get latest Biomedical Concept Dataset Specializations List
+      description: Get latest Biomedical Concept Dataset Specializations List
+      operationId: get_latest_bc_datasetspecializations_mdr_specializations_datasetspecializati
+      parameters:
+        - name: biomedicalconcept
+          in: query
+          schema:
+            title: Biomedicalconcept
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecializationsList'
+              example:
+                _links:
+                  datasetSpecializations:
+                    - href: /mdr/specializations/sdtm/datasetspecializations/AE
+                      title: Adverse Event Free Text Format
+                      type: SDTM Dataset Specialization
+                    - href: /mdr/specializations/sdtm/datasetspecializations/AEPRESP
+                      title: Adverse Event Prespecified
+                      type: SDTM Dataset Specialization
+                  self:
+                    href: /mdr/bc/biomedicalconcepts/C179175/datasetspecializations
+                    title: Dataset Specializations (latest version)
+                    type: Dataset Specializations List
+                name: Dataset Specializations (latest version)
+                label: Dataset Specializations List
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  /sdtm/packages:
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get SDTM Dataset Specialization Package List
+      description: Get SDTM Dataset Specialization Package List
+      operationId: get_sdtm_specialization_packages_mdr_specializations_sdtm_packages_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageList'
+              example:
+                _links:
+                  packages:
+                    - href: string
+                      title: string
+                      type: string
+                  self:
+                    href: string
+                    title: string
+                    type: string
+  '/sdtm/packages/{package}/datasetspecializations':
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get SDTM Dataset Specializations List for Package
+      description: Get SDTM Dataset Specializations List for Package
+      operationId: get_sdtm_specializations_mdr_specializations_sdtm_packages__package__dataset
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            title: Package
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDTMDatasetSpecializationPackage'
+              example:
+                _links:
+                  datasetSpecializations:
+                    - href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+                      title: Systolic Blood Pressure
+                      type: SDTM Dataset Specialization
+                  self:
+                    href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+                    title: SDTM Dataset Specializations
+                    type: SDTM Dataset Specialization list
+                name: SDTM Dataset Specializations 2022-10-26
+                label: SDTM Dataset Specialization Package Effective 2022-10-26
+                effectiveDate: '2022-10-26'
+                version: '2022-10-26'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  '/sdtm/packages/{package}/datasetspecializations/{datasetspecialization}':
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get SDTM Dataset Specialization for Package
+      description: Get SDTM Dataset Specialization for Package
+      operationId: get_sdtm_specialization_mdr_specializations_sdtm_packages__package__datasets
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            title: Package
+            type: string
+        - name: datasetspecialization
+          in: path
+          required: true
+          schema:
+            title: Datasetspecialization
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDTMSpecialization'
+              example:
+                _links:
+                  parentBiomedicalConcept:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C25298
+                    title: Systolic Blood Pressure
+                    type: Biomedical Concept
+                  parentPackage:
+                    href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+                    title: SDTM Dataset Specialization Package Effective 2022-10-26
+                    type: SDTM Dataset Specialization Package
+                  self:
+                    href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+                    title: Systolic Blood Pressure
+                    type: SDTM Dataset Specialization
+                datasetSpecializationId: SYSBP
+                shortName: Systolic Blood Pressure
+                domain: VS
+                source: VS.VSTESTCD
+                sdtmigStartVersion: '2025-03-02'
+                sdtmigEndVersion: '2025-03-04'
+                variables:
+                  - name: VSSTRESU
+                    dataElementConceptId: C49669
+                    isNonStandard: false
+                    codelist:
+                      conceptId: C66770
+                      submissionValue: VSRESU
+                      href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+                    subsetCodelist: XYZ
+                    valueList:
+                      - ABC
+                      - DEF
+                    assignedTerm:
+                      conceptId: C49670
+                      value: mmHG
+                    role: Qualifier
+                    dataType: string
+                    length: 20
+                    format: ''
+                    significantDigits: 0
+                    relationship:
+                      subject: VSSTRESU
+                      linkingPhrase: is the unit for the value in
+                      predicateTerm: IS_UNIT_FOR
+                      object: VSSTRESN
+                    mandatoryVariable: false
+                    mandatoryValue: false
+                    originType: Assigned
+                    originSource: Sponsor
+                    comparator: ''
+                    vlmTarget: true
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  /sdtm/datasetspecializations:
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get Latest SDTM Dataset Specializations List
+      description: Get Latest SDTM Dataset Specializations List
+      operationId: get_latest_sdtm_specializations_mdr_specializations_sdtm_datasetspecializati
+      parameters:
+        - name: domain
+          in: query
+          schema:
+            title: Domain
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDTMDatasetSpecializationsList'
+              example:
+                _links:
+                  datasetSpecializations:
+                    - href: /mdr/specializations/sdtm/datasetspecializations/SYSBP
+                      title: Systolic Blood Pressure
+                      type: SDTM Dataset Specialization
+                  self:
+                    href: /mdr/specializations/sdtm/datasetspecializations
+                    title: SDTM Dataset Specializations (Latest version)
+                    type: SDTM Dataset Specialization List
+                name: SDTM Dataset Specialization (Latest version)
+                label: SDTM Dataset Specialization List
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  '/sdtm/datasetspecializations/{dataset_specialization_id}':
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get Latest SDTM Specialization
+      description: Get Latest SDTM Specialization
+      operationId: get_latest_sdtm_specialization_mdr_specializations_sdtm_datasetspecializatio
+      parameters:
+        - name: dataset_specialization_id
+          in: path
+          required: true
+          schema:
+            title: Dataset Specialization Id
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDTMSpecialization'
+              example:
+                _links:
+                  parentBiomedicalConcept:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C25298
+                    title: Systolic Blood Pressure
+                    type: Biomedical Concept
+                  parentPackage:
+                    href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+                    title: SDTM Dataset Specialization Package Effective 2022-10-26
+                    type: SDTM Dataset Specialization Package
+                  self:
+                    href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+                    title: Systolic Blood Pressure
+                    type: SDTM Dataset Specialization
+                datasetSpecializationId: SYSBP
+                shortName: Systolic Blood Pressure
+                domain: VS
+                source: VS.VSTESTCD
+                sdtmigStartVersion: '2025-03-02'
+                sdtmigEndVersion: '2025-03-04'
+                variables:
+                  - name: VSSTRESU
+                    dataElementConceptId: C49669
+                    isNonStandard: false
+                    codelist:
+                      conceptId: C66770
+                      submissionValue: VSRESU
+                      href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+                    subsetCodelist: XYZ
+                    valueList:
+                      - ABC
+                      - DEF
+                    assignedTerm:
+                      conceptId: C49670
+                      value: mmHG
+                    role: Qualifier
+                    dataType: string
+                    length: 20
+                    format: ''
+                    significantDigits: 0
+                    relationship:
+                      subject: VSSTRESU
+                      linkingPhrase: is the unit for the value in
+                      predicateTerm: IS_UNIT_FOR
+                      object: VSSTRESN
+                    mandatoryVariable: false
+                    mandatoryValue: false
+                    originType: Assigned
+                    originSource: Sponsor
+                    comparator: ''
+                    vlmTarget: true
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  /sdtm/domains:
+    get:
+      tags:
+        - SDTM Dataset Specialization Endpoints
+      summary: Get SDTM Dataset Specialization Domain List
+      description: Get SDTM Dataset Specialization Domain List
+      operationId: get_sdtm_dataset_specialization_domain_list_mdr_specializations_sdtm_domains
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDTMDatasetSpecializationDomainsList'
+              example:
+                _links:
+                  self:
+                    href: /mdr/specializations/sdtm/domains
+                    title: SDTM Dataset Specializations Domains
+                    type: SDTM Dataset Specializations Domains List
+                name: SDTM Dataset Specializations Domains
+                label: SDTM Dataset Specializations Domains List
+                domains:
+                  - _links:
+                      self:
+                        href: /mdr/specializations/sdtm/datasetspecializations?domain=LB
+                        title: SDTM Dataset Specialization Domain (LB)
+                        type: SDTM Dataset Specialization Domain
+                    name: LB
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Link:
+      title: Link
+      type: object
+      properties:
+        href:
+          title: Href
+          type: string
+        title:
+          title: Title
+          type: string
+        type:
+          title: Type
+          type: string
+    SpecializationListLinks:
+      title: SpecializationListLinks
+      required:
+        - self
+      type: object
+      properties:
+        datasetSpecializations:
+          title: Datasetspecializations
+          type: object
+        self:
+          $ref: '#/components/schemas/Link'
+        parentBiomedicalConcept:
+          $ref: '#/components/schemas/Link'
+    SpecializationsList:
+      title: SpecializationsList
+      required:
+        - name
+        - label
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SpecializationListLinks'
+        name:
+          title: Name
+          type: string
+        label:
+          title: Label
+          type: string
+      example:
+        _links:
+          datasetSpecializations:
+            - href: /mdr/specializations/sdtm/datasetspecializations/AE
+              title: Adverse Event Free Text Format
+              type: SDTM Dataset Specialization
+            - href: /mdr/specializations/sdtm/datasetspecializations/AEPRESP
+              title: Adverse Event Prespecified
+              type: SDTM Dataset Specialization
+          self:
+            href: /mdr/bc/biomedicalconcepts/C179175/datasetspecializations
+            title: Dataset Specializations (latest version)
+            type: Dataset Specializations List
+        name: Dataset Specializations (latest version)
+        label: Dataset Specializations List
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    PackageList:
+      title: PackageList
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/PackageListLinks'
+    PackageListLinks:
+      title: PackageListLinks
+      required:
+        - self
+      type: object
+      properties:
+        packages:
+          title: Packages
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    Relationship:
+      title: Relationship
+      required:
+        - subject
+        - linkingPhrase
+        - predicateTerm
+        - object
+      type: object
+      properties:
+        subject:
+          title: Subject
+          type: string
+        linkingPhrase:
+          title: Linkingphrase
+          type: string
+        predicateTerm:
+          title: Predicateterm
+          type: string
+        object:
+          title: Object
+          type: string
+      example:
+        subject: VSSTRESU
+        linkingPhrase: is the unit for the value in
+        predicateTerm: IS_UNIT_FOR
+        object: VSSTRESN
+    SDTMAssignedTerm:
+      title: SDTMAssignedTerm
+      type: object
+      properties:
+        conceptId:
+          title: Conceptid
+          type: string
+        value:
+          title: Value
+          type: string
+      example:
+        conceptId: C49670
+        value: mmHG
+    SDTMCodelist:
+      title: SDTMCodelist
+      type: object
+      properties:
+        conceptId:
+          title: Conceptid
+          type: string
+        submissionValue:
+          title: Submissionvalue
+          type: string
+        href:
+          title: Href
+          type: string
+      example:
+        conceptId: C66770
+        submissionValue: VSRESU
+        href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+    SDTMDatasetSpecializationDomain:
+      title: SDTMDatasetSpecializationDomain
+      required:
+        - name
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SDTMDatasetSpecializationDomainLink'
+        name:
+          title: Name
+          type: string
+    SDTMDatasetSpecializationDomainLink:
+      title: SDTMDatasetSpecializationDomainLink
+      required:
+        - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Link'
+    SDTMDatasetSpecializationDomainsList:
+      title: SDTMDatasetSpecializationDomainsList
+      required:
+        - name
+        - label
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SDTMDatasetSpecializationDomainsListLinks'
+        name:
+          title: Name
+          type: string
+        label:
+          title: Label
+          type: string
+        domains:
+          title: Domains
+          type: array
+          items:
+            $ref: '#/components/schemas/SDTMDatasetSpecializationDomain'
+      example:
+        _links:
+          self:
+            href: /mdr/specializations/sdtm/domains
+            title: SDTM Dataset Specializations Domains
+            type: SDTM Dataset Specializations Domains List
+        name: SDTM Dataset Specializations Domains
+        label: SDTM Dataset Specializations Domains List
+        domains:
+          - _links:
+              self:
+                href: /mdr/specializations/sdtm/datasetspecializations?domain=LB
+                title: SDTM Dataset Specialization Domain (LB)
+                type: SDTM Dataset Specialization Domain
+            name: LB
+    SDTMDatasetSpecializationDomainsListLinks:
+      title: SDTMDatasetSpecializationDomainsListLinks
+      required:
+        - self
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Link'
+    SDTMDatasetSpecializationListLinks:
+      title: SDTMDatasetSpecializationListLinks
+      required:
+        - self
+      type: object
+      properties:
+        datasetSpecializations:
+          title: Datasetspecializations
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    SDTMDatasetSpecializationPackage:
+      title: SDTMDatasetSpecializationPackage
+      required:
+        - name
+        - label
+        - effectiveDate
+        - version
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SDTMDatasetSpecializationPackageLinks'
+        name:
+          title: Name
+          type: string
+        label:
+          title: Label
+          type: string
+        effectiveDate:
+          title: Effectivedate
+          type: string
+        version:
+          title: Version
+          type: string
+      example:
+        _links:
+          datasetSpecializations:
+            - href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+              title: Systolic Blood Pressure
+              type: SDTM Dataset Specialization
+          self:
+            href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+            title: SDTM Dataset Specializations
+            type: SDTM Dataset Specialization list
+        name: SDTM Dataset Specializations 2022-10-26
+        label: SDTM Dataset Specialization Package Effective 2022-10-26
+        effectiveDate: '2022-10-26'
+        version: '2022-10-26'
+    SDTMDatasetSpecializationPackageLinks:
+      title: SDTMDatasetSpecializationPackageLinks
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Link'
+        datasetSpecializations:
+          title: Datasetspecializations
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    SDTMDatasetSpecializationsList:
+      title: SDTMDatasetSpecializationsList
+      required:
+        - name
+        - label
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SDTMDatasetSpecializationListLinks'
+        name:
+          title: Name
+          type: string
+        label:
+          title: Label
+          type: string
+        domain:
+          title: Domain
+          type: string
+      example:
+        _links:
+          datasetSpecializations:
+            - href: /mdr/specializations/sdtm/datasetspecializations/SYSBP
+              title: Systolic Blood Pressure
+              type: SDTM Dataset Specialization
+          self:
+            href: /mdr/specializations/sdtm/datasetspecializations
+            title: SDTM Dataset Specializations (Latest version)
+            type: SDTM Dataset Specialization List
+        name: SDTM Dataset Specialization (Latest version)
+        label: SDTM Dataset Specialization List
+    SDTMSpecialization:
+      title: SDTMSpecialization
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/SDTMSpecializationLinks'
+        datasetSpecializationId:
+          title: Datasetspecializationid
+          type: string
+        domain:
+          title: Domain
+          type: string
+        shortName:
+          title: Shortname
+          type: string
+        source:
+          title: Source
+          type: string
+        sdtmigStartVersion:
+          title: Sdtmigstartversion
+          type: string
+        sdtmigEndVersion:
+          title: Sdtmigendversion
+          type: string
+        variables:
+          title: Variables
+          type: array
+          items:
+            $ref: '#/components/schemas/SDTMVariable'
+      example:
+        _links:
+          parentBiomedicalConcept:
+            href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C25298
+            title: Systolic Blood Pressure
+            type: Biomedical Concept
+          parentPackage:
+            href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+            title: SDTM Dataset Specialization Package Effective 2022-10-26
+            type: SDTM Dataset Specialization Package
+          self:
+            href: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+            title: Systolic Blood Pressure
+            type: SDTM Dataset Specialization
+        datasetSpecializationId: SYSBP
+        shortName: Systolic Blood Pressure
+        domain: VS
+        source: VS.VSTESTCD
+        sdtmigStartVersion: '3-2'
+        sdtmigEndVersion: '3-4'
+        variables:
+          - name: VSSTRESU
+            dataElementConceptId: C49669
+            isNonStandard: false
+            codelist:
+              conceptId: C66770
+              submissionValue: VSRESU
+              href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+            subsetCodelist: XYZ
+            valueList:
+              - ABC
+              - DEF
+            assignedTerm:
+              conceptId: C49670
+              value: mmHG
+            role: Qualifier
+            dataType: string
+            length: 20
+            format: ''
+            significantDigits: 0
+            relationship:
+              subject: VSSTRESU
+              linkingPhrase: is the unit for the value in
+              predicateTerm: IS_UNIT_FOR
+              object: VSSTRESN
+            mandatoryVariable: false
+            mandatoryValue: false
+            originType: Assigned
+            originSource: Sponsor
+            comparator: ''
+            vlmTarget: true
+    SDTMSpecializationLinks:
+      title: SDTMSpecializationLinks
+      type: object
+      properties:
+        parentBiomedicalConcept:
+          $ref: '#/components/schemas/Link'
+        parentPackage:
+          $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    SDTMVariable:
+      title: SDTMVariable
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        dataElementConceptId:
+          title: Dataelementconceptid
+          type: string
+        isNonStandard:
+          title: Isnonstandard
+          type: boolean
+        codelist:
+          $ref: '#/components/schemas/SDTMCodelist'
+        subsetCodelist:
+          title: Subsetcodelist
+          type: string
+        valueList:
+          title: Valuelist
+          type: array
+          items:
+            type: string
+        assignedTerm:
+          $ref: '#/components/schemas/SDTMAssignedTerm'
+        role:
+          title: Role
+          type: string
+        dataType:
+          title: Datatype
+          type: string
+        length:
+          title: Length
+          type: integer
+        format:
+          title: Format
+          type: string
+        significantDigits:
+          title: Significantdigits
+          type: integer
+        relationship:
+          $ref: '#/components/schemas/Relationship'
+        mandatoryVariable:
+          title: Mandatoryvariable
+          type: boolean
+        mandatoryValue:
+          title: Mandatoryvalue
+          type: boolean
+        originType:
+          title: Origintype
+          type: string
+        originSource:
+          title: Originsource
+          type: string
+        comparator:
+          title: Comparator
+          type: string
+        vlmTarget:
+          title: Vlmtarget
+          type: boolean
+      example:
+        name: VSSTRESU
+        dataElementConceptId: C49669
+        isNonStandard: false
+        codelist:
+          conceptId: C66770
+          submissionValue: VSRESU
+          href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+        subsetCodelist: XYZ
+        valueList:
+          - ABC
+          - DEF
+        assignedTerm:
+          conceptId: C49670
+          value: mmHG
+        role: Qualifier
+        dataType: string
+        length: 20
+        format: ''
+        significantDigits: 0
+        relationship:
+          subject: VSSTRESU
+          linkingPhrase: is the unit for the value in
+          predicateTerm: IS_UNIT_FOR
+          object: VSSTRESN
+        mandatoryVariable: false
+        mandatoryValue: false
+        originType: Assigned
+        originSource: Sponsor
+        comparator: ''
+        vlmTarget: true
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: api-key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: api-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

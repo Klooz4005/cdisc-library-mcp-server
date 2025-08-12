@@ -1,0 +1,617 @@
+openapi: 3.0.1
+info:
+  title: v2 Biomedical Concept Endpoints
+  version: '1.0'
+servers:
+  - url: https://api.library.cdisc.org/api/cosmos/v2/mdr/bc
+paths:
+  /packages:
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get Biomedical Concept Package List
+      description: Get Biomedical Concept Package List
+      operationId: get_biomedicalconcept_packages_mdr_bc_packages_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageList'
+              example:
+                _links:
+                  packages:
+                    - href: string
+                      title: string
+                      type: string
+                  self:
+                    href: string
+                    title: string
+                    type: string
+  '/packages/{package}/biomedicalconcepts':
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get Biomedical Concept List for Package
+      description: Get Biomedical Concept List for Package
+      operationId: get_biomedicalconcepts_mdr_bc_packages__package__biomedicalconcepts_get
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            title: Package
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiomedicalConceptPackage'
+              example:
+                _links:
+                  biomedicalConcepts:
+                    - href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+                      title: Pulse rate
+                      type: Biomedical Concept
+                  self:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+                    title: Biomedical Concepts
+                    type: Biomedical Concept List
+                name: Biomedical Concepts 2022-10-26
+                label: Biomedical Concept Package Effective 2022-10-26
+                effectiveDate: '2022-10-26'
+                version: '2022-10-26'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  '/packages/{package}/biomedicalconcepts/{biomedicalconcept}':
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get Biomedical Concept for Package
+      description: Get Biomedical Concept for Package
+      operationId: get_package_biomedicalconcept_mdr_bc_packages__package__biomedicalconcepts__
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            title: Package
+            type: string
+        - name: biomedicalconcept
+          in: path
+          required: true
+          schema:
+            title: Biomedicalconcept
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiomedicalConcept'
+              example:
+                _links:
+                  parentBiomedicalConcept:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49672
+                    title: Vital Signs Measurement
+                    type: Biomedical Concept
+                  parentPackage:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+                    title: Biomedical Concept Package Effective 2022-10-26
+                    type: Biomedical Concept Package
+                  self:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+                    title: Pulse Rate
+                    type: Biomedical Concept
+                conceptId: C49676
+                ncitCode: C49676
+                href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C49676
+                categories:
+                  - Vital Signs
+                shortName: Pulse Rate
+                synonyms:
+                  - Pulse
+                resultScales:
+                  - Quantitative
+                definition: 'The rate of the pulse as observed in an artery, expressed as beats per minute. It can be measured at several anatomic sites, including the wrist, neck, temple, groin, behind the knees, or on top of the foot.'
+                coding:
+                  - code: 39156-5
+                    system: http://loinc.org/
+                    systemName: LOINC
+                dataElementConcepts:
+                  - conceptId: C123975
+                    ncitCode: C123975
+                    href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+                    shortName: Vital Signs Laterality
+                    dataType: string
+                    exampleSet:
+                      - Left
+                      - Right
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  /biomedicalconcepts:
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get Biomedical Concepts List
+      description: Get Biomedical Concepts List
+      operationId: get_latest_biomedical_concepts_mdr_bc_biomedicalconcepts_get
+      parameters:
+        - name: category
+          in: query
+          schema:
+            title: Category
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiomedicalConceptList'
+              example:
+                _links:
+                  biomedicalConcepts:
+                    - href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+                      title: Pulse rate
+                      type: Biomedical Concept
+                  self:
+                    href: /mdr/bc/biomedicalconcepts
+                    title: Biomedical Concepts
+                    type: Biomedical Concept List
+                name: Biomedical Concepts (latest version)
+                label: Biomedical Concept List
+                category: Measurement
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  '/biomedicalconcepts/{biomedicalconcept}':
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get latest Biomedical Concept
+      description: Get latest Biomedical Concept
+      operationId: get_latest_biomedicalconcept_mdr_bc_biomedicalconcepts__biomedicalconcept__g
+      parameters:
+        - name: biomedicalconcept
+          in: path
+          required: true
+          schema:
+            title: Biomedicalconcept
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiomedicalConcept'
+              example:
+                _links:
+                  parentBiomedicalConcept:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49672
+                    title: Vital Signs Measurement
+                    type: Biomedical Concept
+                  parentPackage:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+                    title: Biomedical Concept Package Effective 2022-10-26
+                    type: Biomedical Concept Package
+                  self:
+                    href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+                    title: Pulse Rate
+                    type: Biomedical Concept
+                conceptId: C49676
+                ncitCode: C49676
+                href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C49676
+                categories:
+                  - Vital Signs
+                shortName: Pulse Rate
+                synonyms:
+                  - Pulse
+                resultScales:
+                  - Quantitative
+                definition: 'The rate of the pulse as observed in an artery, expressed as beats per minute. It can be measured at several anatomic sites, including the wrist, neck, temple, groin, behind the knees, or on top of the foot.'
+                coding:
+                  - code: 39156-5
+                    system: http://loinc.org/
+                    systemName: LOINC
+                dataElementConcepts:
+                  - conceptId: C123975
+                    ncitCode: C123975
+                    href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+                    shortName: Vital Signs Laterality
+                    dataType: string
+                    exampleSet:
+                      - Left
+                      - Right
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+              example:
+                detail:
+                  - loc:
+                      - { }
+                    msg: string
+                    type: string
+  /categories:
+    get:
+      tags:
+        - Biomedical Concept Endpoints
+      summary: Get Latest Biomedical Concept Categories
+      description: Get Latest Biomedical Concept Categories
+      operationId: get_latest_biomedicalconcept_categories_mdr_bc_categories_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: { }
+components:
+  schemas:
+    BiomedicalConcept:
+      title: BiomedicalConcept
+      required:
+        - conceptId
+        - categories
+        - shortName
+        - definition
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/BiomedicalConceptLinks'
+        conceptId:
+          title: Conceptid
+          type: string
+        href:
+          title: Href
+          type: string
+        categories:
+          title: Categories
+          type: array
+          items:
+            type: string
+        shortName:
+          title: Shortname
+          type: string
+        synonyms:
+          title: Synonyms
+          type: array
+          items:
+            type: string
+        resultScales:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultScale'
+        definition:
+          title: Definition
+          type: string
+        coding:
+          title: Coding
+          type: array
+          items:
+            $ref: '#/components/schemas/ConceptCoding'
+        dataElementConcepts:
+          title: Dataelementconcepts
+          type: array
+          items:
+            $ref: '#/components/schemas/DataElementConcept'
+        ncitCode:
+          title: Ncitcode
+          type: string
+      example:
+        _links:
+          parentBiomedicalConcept:
+            href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49672
+            title: Vital Signs Measurement
+            type: Biomedical Concept
+          parentPackage:
+            href: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+            title: Biomedical Concept Package Effective 2022-10-26
+            type: Biomedical Concept Package
+          self:
+            href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+            title: Pulse Rate
+            type: Biomedical Concept
+        conceptId: C49676
+        ncitCode: C49676
+        href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C49676
+        categories:
+          - Vital Signs
+        shortName: Pulse Rate
+        synonyms:
+          - Pulse
+        resultScales:
+          - Quantitative
+        definition: 'The rate of the pulse as observed in an artery, expressed as beats per minute. It can be measured at several anatomic sites, including the wrist, neck, temple, groin, behind the knees, or on top of the foot.'
+        coding:
+          - code: 39156-5
+            system: http://loinc.org/
+            systemName: LOINC
+        dataElementConcepts:
+          - conceptId: C123975
+            ncitCode: C123975
+            href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+            shortName: Vital Signs Laterality
+            dataType: string
+            exampleSet:
+              - Left
+              - Right
+    BiomedicalConceptLinks:
+      title: BiomedicalConceptLinks
+      type: object
+      properties:
+        parentBiomedicalConcept:
+          $ref: '#/components/schemas/Link'
+        parentPackage:
+          $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    BiomedicalConceptList:
+      title: BiomedicalConceptList
+      required:
+        - name
+        - label
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/BiomedicalConceptListLinks'
+        name:
+          title: Name
+          type: string
+        category:
+          title: Category
+          type: string
+        label:
+          title: Label
+          type: string
+      example:
+        _links:
+          biomedicalConcepts:
+            - href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+              title: Pulse rate
+              type: Biomedical Concept
+          self:
+            href: /mdr/bc/biomedicalconcepts
+            title: Biomedical Concepts
+            type: Biomedical Concept List
+        name: Biomedical Concepts (latest version)
+        label: Biomedical Concept List
+        category: Measurement
+    BiomedicalConceptListLinks:
+      title: BiomedicalConceptListLinks
+      required:
+        - self
+      type: object
+      properties:
+        biomedicalConcepts:
+          title: Biomedicalconcepts
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    BiomedicalConceptPackage:
+      title: BiomedicalConceptPackage
+      required:
+        - name
+        - label
+        - effectiveDate
+        - version
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/BiomedicalConceptPackageLinks'
+        name:
+          title: Name
+          type: string
+        label:
+          title: Label
+          type: string
+        effectiveDate:
+          title: Effectivedate
+          type: string
+        version:
+          title: Version
+          type: string
+      example:
+        _links:
+          biomedicalConcepts:
+            - href: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+              title: Pulse rate
+              type: Biomedical Concept
+          self:
+            href: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+            title: Biomedical Concepts
+            type: Biomedical Concept List
+        name: Biomedical Concepts 2022-10-26
+        label: Biomedical Concept Package Effective 2022-10-26
+        effectiveDate: '2022-10-26'
+        version: '2022-10-26'
+    BiomedicalConceptPackageLinks:
+      title: BiomedicalConceptPackageLinks
+      required:
+        - self
+      type: object
+      properties:
+        biomedicalConcepts:
+          title: Biomedicalconcepts
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    ConceptCoding:
+      title: ConceptCoding
+      required:
+        - code
+        - system
+      type: object
+      properties:
+        code:
+          title: Code
+          type: string
+        system:
+          title: System
+          type: string
+        systemName:
+          title: Systemname
+          type: string
+      example:
+        code: 39156-5
+        system: http://loinc.org/
+        systemName: LOINC
+    DataElementConcept:
+      title: DataElementConcept
+      required:
+        - conceptId
+        - shortName
+      type: object
+      properties:
+        conceptId:
+          title: Conceptid
+          type: string
+        href:
+          title: Href
+          type: string
+        shortName:
+          title: Shortname
+          type: string
+        dataType:
+          title: Datatype
+          type: string
+        exampleSet:
+          title: Exampleset
+          type: array
+          items:
+            type: string
+        ncitCode:
+          title: Ncitcode
+          type: string
+      example:
+        conceptId: C123975
+        ncitCode: C123975
+        href: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+        shortName: Vital Signs Laterality
+        dataType: string
+        exampleSet:
+          - Left
+          - Right
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Link:
+      title: Link
+      type: object
+      properties:
+        href:
+          title: Href
+          type: string
+        title:
+          title: Title
+          type: string
+        type:
+          title: Type
+          type: string
+    PackageList:
+      title: PackageList
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/PackageListLinks'
+    PackageListLinks:
+      title: PackageListLinks
+      required:
+        - self
+      type: object
+      properties:
+        packages:
+          title: Packages
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        self:
+          $ref: '#/components/schemas/Link'
+    ResultScale:
+      title: ResultScale
+      enum:
+        - Quantitative
+        - Ordinal
+        - Nominal
+        - Narrative
+        - Temporal
+      description: An enumeration.
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: api-key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: api-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

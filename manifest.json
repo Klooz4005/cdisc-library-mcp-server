@@ -1,0 +1,22 @@
+{
+  "dxt_version": "1",
+  "name": "cdisc-library-mcp",
+  "version": "0.1.0",
+  "description": "DXT extension packaging a local MCP server for CDISC Library APIs (discovery, Biomedical Concepts, SDTM Specializations).",
+  "author": { "name": "CDISC MCP community" },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["server/index.js"],
+      "env": {
+        "CDISC_OPENAPI_DIR": "${DXT_DIR}/server/openapi",
+        "CDISC_API_KEY": "${CDISC_API_KEY}",
+        "CDISC_AUTH_LOCATION": "${CDISC_AUTH_LOCATION}"
+      }
+    }
+  }
+}
+
+
