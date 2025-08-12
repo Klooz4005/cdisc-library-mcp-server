@@ -13,6 +13,14 @@ const __dirname = path.dirname(__filename);
 const OPENAPI_DIR = process.env.CDISC_OPENAPI_DIR || path.join(__dirname, "openapi");
 const DEFAULT_BASE_HEADERS = {};
 
+// Caching and resilience configuration
+const CACHE_ENABLED = process.env.CDISC_CACHE_ENABLED !== "0"; // enabled by default
+const CACHE_TTL_MS = Math.max(0, Number(process.env.CDISC_CACHE_TTL_MS || 60000));
+const CACHE_MAX_ENTRIES = Math.max(1, Number(process.env.CDISC_CACHE_MAX_ENTRIES || 500));
+const RETRY_COUNT = Math.max(0, Number(process.env.CDISC_RETRY_COUNT || 2));
+const RETRY_BACKOFF_MS = Math.max(0, Number(process.env.CDISC_RETRY_BACKOFF_MS || 300));
+const CACHE_DEBUG = process.env.CDISC_CACHE_DEBUG === "1";
+
 function loadYamlIfExists(filename) {
   const filePath = path.join(OPENAPI_DIR, filename);
   if (fs.existsSync(filePath)) {
@@ -85,6 +93,48 @@ function appendAuthQuery(url, authConfig) {
     return u.toString();
   }
   return url;
+}
+
+function normalizeUrlForCache(url, authConfig) {
+  try {
+    const u = new URL(url);
+    const queryName = authConfig?.queryName || "api-key";
+    // Avoid keying cache entries by credential
+    u.searchParams.delete(queryName);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+class SimpleLruCache {
+  constructor(maxEntries) {
+    this.maxEntries = maxEntries;
+    this.map = new Map();
+  }
+  get(key) {
+    if (!this.map.has(key)) return undefined;
+    const value = this.map.get(key);
+    // refresh LRU order
+    this.map.delete(key);
+    this.map.set(key, value);
+    return value;
+  }
+  set(key, value) {
+    if (this.map.has(key)) this.map.delete(key);
+    this.map.set(key, value);
+    // evict oldest
+    while (this.map.size > this.maxEntries) {
+      const oldestKey = this.map.keys().next().value;
+      this.map.delete(oldestKey);
+    }
+  }
+}
+
+const responseCache = CACHE_ENABLED ? new SimpleLruCache(CACHE_MAX_ENTRIES) : null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Load OpenAPI specs
@@ -262,25 +312,94 @@ async function handleCallOperation(input) {
     ...(headers || {})
   };
 
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), Math.max(1, Number(timeoutMs) || 30000));
-  try {
-    const res = await fetch(url, {
-      method: meta.method,
-      headers: requestHeaders,
-      body: body !== undefined && body !== null && meta.method !== "GET" ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
-      signal: controller.signal
-    });
-    const text = await res.text();
-    let parsed = null;
-    try { parsed = JSON.parse(text); } catch { /* keep text */ }
-    return {
-      content: [{ type: parsed ? "json" : "text", text: parsed ? JSON.stringify(parsed) : text }],
-      isError: !res.ok,
-    };
-  } finally {
-    clearTimeout(id);
+  // Caching key excludes credential-bearing query string
+  const cacheKey = normalizeUrlForCache(url, authConfig);
+  const now = Date.now();
+
+  if (CACHE_ENABLED && meta.method === "GET") {
+    const cached = responseCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) {
+      if (CACHE_DEBUG) console.error(`[cache] hit ${cacheKey}`);
+      return { content: [cached.content], isError: false };
+    }
   }
+
+  // Conditional request support
+  const etag = CACHE_ENABLED && meta.method === "GET" ? responseCache.get(cacheKey)?.etag : undefined;
+  const conditionalHeaders = etag ? { "if-none-match": etag } : {};
+
+  const attemptFetch = async () => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), Math.max(1, Number(timeoutMs) || 30000));
+    try {
+      const res = await fetch(url, {
+        method: meta.method,
+        headers: { ...requestHeaders, ...conditionalHeaders },
+        body:
+          body !== undefined && body !== null && meta.method !== "GET"
+            ? typeof body === "string"
+              ? body
+              : JSON.stringify(body)
+            : undefined,
+        signal: controller.signal
+      });
+      return res;
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
+  let res;
+  let lastError;
+  for (let attempt = 0; attempt <= RETRY_COUNT; attempt++) {
+    try {
+      res = await attemptFetch();
+      // Retry for network errors handled above; for HTTP, retry 5xx
+      if (res.status >= 500 && res.status <= 599 && attempt < RETRY_COUNT) {
+        if (CACHE_DEBUG) console.error(`[retry] attempt ${attempt + 1} for ${cacheKey} due to ${res.status}`);
+        await sleep(RETRY_BACKOFF_MS * (attempt + 1));
+        continue;
+      }
+      break;
+    } catch (e) {
+      lastError = e;
+      if (attempt < RETRY_COUNT) {
+        if (CACHE_DEBUG) console.error(`[retry] network error attempt ${attempt + 1} for ${cacheKey}: ${e?.message || e}`);
+        await sleep(RETRY_BACKOFF_MS * (attempt + 1));
+        continue;
+      }
+      throw e;
+    }
+  }
+
+  // 304 Not Modified → serve cached body
+  if (CACHE_ENABLED && meta.method === "GET" && res.status === 304) {
+    const cached = responseCache.get(cacheKey);
+    if (cached) {
+      if (CACHE_DEBUG) console.error(`[cache] revalidated ${cacheKey}`);
+      // refresh TTL
+      cached.expiresAt = now + CACHE_TTL_MS;
+      responseCache.set(cacheKey, cached);
+      return { content: [cached.content], isError: false };
+    }
+  }
+
+  const text = await res.text();
+  let parsed = null;
+  try { parsed = JSON.parse(text); } catch { /* keep text */ }
+  const content = [{ type: parsed ? "json" : "text", text: parsed ? JSON.stringify(parsed) : text }];
+
+  if (CACHE_ENABLED && meta.method === "GET" && res.ok) {
+    const newEtag = res.headers.get("etag") || undefined;
+    responseCache.set(cacheKey, {
+      content: content[0],
+      etag: newEtag,
+      expiresAt: now + CACHE_TTL_MS
+    });
+    if (CACHE_DEBUG) console.error(`[cache] store ${cacheKey} etag=${newEtag || "-"}`);
+  }
+
+  return { content, isError: !res.ok };
 }
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {

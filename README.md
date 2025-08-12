@@ -52,6 +52,14 @@ npm start
 - **CDISC_API_BASE_URL** (optional): override server base URL, default `https://api.library.cdisc.org`
 - **CDISC_OPENAPI_DIR** (optional): directory for OpenAPI YAML; defaults to `server/openapi`. The `manifest.json` sets this to `${DXT_DIR}/server/openapi` when packaged as DXT so the extension is self‑contained.
 
+#### Caching and resilience
+- **CDISC_CACHE_ENABLED** (optional): set to `0` to disable caching. Default: enabled.
+- **CDISC_CACHE_TTL_MS** (optional): TTL for GET responses in milliseconds. Default: `60000`.
+- **CDISC_CACHE_MAX_ENTRIES** (optional): max cache entries (LRU). Default: `500`.
+- **CDISC_RETRY_COUNT** (optional): number of retries for transient 5xx/network errors. Default: `2`.
+- **CDISC_RETRY_BACKOFF_MS** (optional): base backoff per attempt in ms. Default: `300`.
+- **CDISC_CACHE_DEBUG** (optional): set to `1` to log cache/retry activity to stderr.
+
 ### Package as a DXT extension
 - Spec: [DXT MANIFEST.md](https://github.com/anthropics/dxt/blob/main/MANIFEST.md)
 - CLI: [DXT CLI.md](https://github.com/anthropics/dxt/blob/main/CLI.md)
